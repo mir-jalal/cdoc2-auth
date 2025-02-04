@@ -9,8 +9,8 @@
 name: Build cdoc2-auth with CI
 
 on:
-  push:
-    branches: [ "master" ]
+  release:
+    types: [created]
 
 jobs:
   publish:
@@ -29,4 +29,4 @@ jobs:
         run: |
           mvn deploy
         env:
-          GITHUB_TOKEN: ${{ github.token }} # GITHUB_TOKEN is the default env for the password
+          GITHUB_TOKEN: ${{ github.token }}
