@@ -106,7 +106,7 @@ public class AuthTokenCreator {
      * </code>
      *
      * @return JWTClaimsSet, where "aud" list has been replaced with digests of Disclosures
-     * @throws ParseException
+     * @throws ParseException if JWT claims parse has failed
      */
     private JWTClaimsSet createPayload() throws ParseException {
         // Create an SDObjectBuilder instance to prepare the payload part of
@@ -137,18 +137,41 @@ public class AuthTokenCreator {
     }
 
     /**
-     * Create payload part of JWT and sign it with JWSSigner and JWK private key. (Currently only RSAsigner and matching RSA public jwk is supported)
-     * @param signer jwsSigner, currently only RSASigner is supported
-     * @throws JOSEException
-     * @throws ParseException
+     * Create payload part of JWT and sign it with JWSSigner and JWK private key.
+     * Currently, RSASigner and ECDSASigner are supported.
+     * @param signer jwsSigner jwsSigner.supportedJWSAlgorithms() must return exactly 1 algorithm
+     * @throws JOSEException if JWT signing has failed
+     * @throws ParseException if JWT claims parse has failed
      */
-    //Currently only RSASigner and RSA public jwk are supported
-    public void sign(JWSSigner signer) throws JOSEException, ParseException {
+    public void sign(JWSSigner signer)
+        throws ParseException, JOSEException {
+
+        Objects.requireNonNull(signer);
+
+        if (signer.supportedJWSAlgorithms().size() != 1) {
+            throw new JOSEException("Expecting signer with exactly 1 supported JWS algorithm: "
+                + signer.supportedJWSAlgorithms());
+        }
+        JWSAlgorithm jwsAlgorithm = signer.supportedJWSAlgorithms().iterator().next();
+        sign(signer, jwsAlgorithm);
+    }
+
+    /**
+     * Create payload part of JWT and sign it with JWSSigner and JWK private key.
+     * Currently, RSASigner and ECDSASigner are supported.
+     * @param signer jwsSigner
+     * @param jwsAlgorithm jws algorithm that will be used for signing. Must be supported by signer
+     * @throws JOSEException if JWT signing has failed
+     * @throws ParseException if JWT claims parse has failed
+     */
+    public void sign(JWSSigner signer, JWSAlgorithm jwsAlgorithm)
+        throws JOSEException, ParseException {
         //for SID certificate is available after successful authentication (that is actually signing with different key - PIN1)
-        //for now use jwk (RSA)
+        //for SID use jwk (RSA), for MID jwk (ECDSA)
 
         JWSHeader header =
-            new JWSHeader.Builder(JWSAlgorithm.RS256) //RSASSA-PKCS1.5, according SID RP API doc, only PKCS1.5 signature padding is supported
+            new JWSHeader.Builder(jwsAlgorithm)
+                // signature padding is supported
                 .type(new JOSEObjectType(Constants.TYPE))
                 .build();
 
@@ -156,7 +179,7 @@ public class AuthTokenCreator {
         SignedJWT jwt = new SignedJWT(header, createPayload());
 
         // Let the signer sign the credential JWT.
-        jwt.sign(signer); //signer requires header, but header seems to be only required for JWSAlgorithm
+        jwt.sign(signer);
 
         this.signedJWT = jwt;
     }

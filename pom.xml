@@ -7,7 +7,7 @@
     <groupId>ee.cyber.cdoc2</groupId>
     <artifactId>cdoc2-auth-token</artifactId>
     <!-- pre-release, version doesn't follow semantic versioning yet -->
-    <version>0.2.0-SNAPSHOT</version>
+    <version>0.3.3-SNAPSHOT</version>
     <packaging>jar</packaging>
     <description>
         CDOC2 auth token library, generates/validates
@@ -19,8 +19,8 @@
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <sd-jwt.version>1.4</sd-jwt.version>
-        <logback.version>1.5.7</logback.version>
-        <nimbus-jose-jwt.version>9.41.2</nimbus-jose-jwt.version>
+        <logback.version>1.5.16</logback.version>
+        <nimbus-jose-jwt.version>10.0.1</nimbus-jose-jwt.version>
         <junit-jupiter.version>5.10.3</junit-jupiter.version>
     </properties>
 
@@ -91,20 +91,24 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- nimbus-jose-jwt JWK.parseFromPEMEncodedObjects() fails run-time with ClassNotFound for
-             org/bouncycastle/openssl/jcajce/JcaPEMKeyConverter . Fix it -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcpkix-jdk18on</artifactId>
-            <version>1.78</version>
-            <scope>test</scope>
+            <version>1.80</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>2.0.16</version>
+            <scope>compile</scope>
+        </dependency>
 
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>${logback.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
